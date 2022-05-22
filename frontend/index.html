@@ -11,10 +11,33 @@
       integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
       crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <section class="vh-100">
       <div class="container h-100">
+        <!-- <div id="initialScreen" class="h-100">
+          <div
+            class="d-flex flex-column align-items-center justify-content-center h-100"
+          >
+            <h1>Multiplayer Snake Game</h1>
+            <button class="btn btn-success" id="newGameButton" type="submit">
+              Create New Game
+            </button>
+            <div>OR</div>
+            <div class="form-group">
+              <input
+                type="text"
+                placeholder="Enter game code "
+                id="gameCodeInput"
+              />
+            </div>
+            <button class="btn btn-success" type="submit" id="joinGameButton">
+              Join Game
+            </button>
+          </div>
+        </div> -->
+
         <div id="gameScreen" class="h-100">
           <div class="d-flex align-items-center justify-content-center h-100">
             <canvas id="canvas"></canvas>
@@ -22,7 +45,12 @@
         </div>
       </div>
     </section>
-    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+      integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+      crossorigin="anonymous"
+    ></script>
     <script src="script.js"></script>
   </body>
 </html>
+ 
