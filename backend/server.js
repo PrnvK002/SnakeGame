@@ -1,7 +1,8 @@
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const { FRAME_RATE } = require('./constants');
-const { createGameState , gameLoop , getUpdatedVelocity } = require('./game');
+const { createGameState , gameLoop , getUpdatedVelocity , initGame } = require('./game');
+const { makeId } = require('./utils');
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
@@ -10,13 +11,38 @@ const io = new Server(httpServer, {
     }
 });
 
+//============ creating global state variables =================
+
+const state = {};
+const clientRooms = {};
+
 io.on("connection", (socket) => {
     // socket.emit('init',{ socket_id : socket.id });
-    const state = createGameState();
 
     socket.on('keydown',handleKeydown);
+    socket.on('newGame',handleNewGame);
+    socket.on('joinGame',handleJoinGame);
+
+    //================= Creating new room for game ============
+
+    function handleNewGame(){
+        let roomName = makeId(5);
+        clientRooms[socket.id] = roomName;
+        socket.emit('gameCode',roomName);
+
+        state[roomName] = initGame();
+        console.log( "state", state);
+        socket.join(roomName);
+        socket.number = 1;
+        socket.emit('init',1);
+    }
+
     //====================== handling key press =========================
     function handleKeydown(keyCode){
+        const roomName = clientRooms[socket.id];
+        if(!roomName){
+            return ;
+        }
         try{
             keyCode = Number(keyCode);
         }catch(err){
@@ -26,23 +52,51 @@ io.on("connection", (socket) => {
 
         const vel = getUpdatedVelocity(keyCode);
         if(vel){
-            state.player.vel = vel;
+            state[roomName].players[socket.number -1 ].vel = vel;
         }
     }
-    startGameInterval(socket,state);
+    //======================== handling second player join ==============
+    function handleJoinGame(gameCode){
+        const room = io.sockets.adapter.rooms[gameCode];
+        let allUsers;
+        if(room){
+            allUsers = room.sockets;
+        }
+        let numClients = 0;
+        if(allUsers){
+            numClients = Object.keys(allUsers).length;
+        }
+        if(numClients === 0 ){
+            socket.emit('unknownGame');
+        }else if(numClients > 1){
+            socket.emit('Too many Players');
+            return ;
+        }
+        clientRooms[socket.id] = gameCode;
+        socket.join(gameCode);
+        socket.number = 2;
+        socket.emit('init',2);
+    
+        startGameInterval(gameCode);
+    }
 });
+
 
 //================ refreshing frames and moving the snake accordingly ========
 
-function startGameInterval(socket,state){
+function startGameInterval(roomName){
 
     const intervalId = setInterval(()=>{
 
-        const winner = gameLoop(state);
+        const winner = gameLoop(state[roomName]);
+
+        console.log(winner);
         if(!winner){
-            socket.emit('gameState',JSON.stringify(state));
+            emitGameState(roomName,state[roomName]);
+            // socket.emit('gameState',JSON.stringify(state));
         }else{
-            socket.emit('gameOver');
+            emitGameOver(roomName,winner);
+            state[roomName] = null;
             clearInterval(intervalId);
         }
 
@@ -50,6 +104,14 @@ function startGameInterval(socket,state){
 
 }
 
+function emitGameState(roomName ,state){
+    // console.log(state);
+    io.sockets.in(roomName).emit('gameState',JSON.stringify(state));
+}
+
+function emitGameOver(roomName,winner){
+    io.sockets.in(roomName).emit('gameOver',JSON.stringify({ winner }));
+}
 
 
 httpServer.listen(3000);

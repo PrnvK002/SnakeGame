@@ -16,7 +16,7 @@
   <body>
     <section class="vh-100">
       <div class="container h-100">
-        <!-- <div id="initialScreen" class="h-100">
+        <div id="initialScreen" class="h-100">
           <div
             class="d-flex flex-column align-items-center justify-content-center h-100"
           >
@@ -36,10 +36,11 @@
               Join Game
             </button>
           </div>
-        </div> -->
+        </div>
 
         <div id="gameScreen" class="h-100">
-          <div class="d-flex align-items-center justify-content-center h-100">
+          <div class="d-flex flex-column align-items-center justify-content-center h-100">
+            <h1>Your game code is : <span id="gameCodeDisplay"></span></h1>
             <canvas id="canvas"></canvas>
           </div>
         </div>
